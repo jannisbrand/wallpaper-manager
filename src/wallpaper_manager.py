@@ -35,8 +35,8 @@ class wallpaper_manager:
 		'''
 		TODO: Write doc string
 		'''
-		if os.path.isdir(self.working_directory + wallpaper_dir + "/"):
-			self.wallpaper_directory = wallpaper_dir + "/"
+		if os.path.isdir(self.working_directory + wallpaper_dir):
+			self.wallpaper_directory = wallpaper_dir + '/'
 			if self._search_wallpaper_dir():
 				return True
 		return False
@@ -44,6 +44,10 @@ class wallpaper_manager:
 
 	def get_wallpapers(self) -> list:
 		return self.wallpaper_collection
+
+
+	def get_work_dir(self) -> str:
+		return self.working_directory
 
 
 	def _search_wallpaper_dir(self) -> bool:
@@ -60,22 +64,27 @@ class wallpaper_manager:
 					self.wallpaper_frame_collection.append(item)
 				elif os.path.isfile(location + item):
 					self.wallpaper_collection.append(item)
-			return 0
+			return 1
 		except os.error as e:
 			print(f"_search_for_wallpaper_collections: {e}")
-			return 1
+			return 0
 
 
-	def push_wallpaper_to_the_desktop(self, image: str = "") -> bool:
+	def push_wallpaper_to_the_desktop(self, image_name: str = "", index: int = -1) -> bool:
 		'''
 		TODO: Write doc string
 		'''
 		try:
-			if image == "":
-				image = self.wallpaper_collection[0]
+			if image_name == "" and index >= 0:
+				image = self.wallpaper_collection[index]
+			else:
+				for image in self.wallpaper_collection:
+					if image is image_name:
+						image = image_name
+						break
 
 			location = self.working_directory + self.wallpaper_directory
 			return ctypes.windll.user32.SystemParametersInfoW(self.SPI_SETDESKWALLPAPER, 0, location + image, self.SPIF_UPDATEINFILE)
-		except ctypes.WinError as e:
+		except Exception as e:
 			print(f"push_wallpaper_to_the_desktop: {e}")
 			return False

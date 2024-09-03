@@ -14,7 +14,7 @@ def main() -> int:
 			manager.set_working_directory("C:/Users/wm00964/Documents/Wallpaper/Animated")
 			manager.set_wallpaper_directory("WormHole")
 			image = manager.get_wallpapers()
-			manager.push_wallpaper_to_the_desktop(image[0])
+			manager.push_wallpaper_to_the_desktop(image_name=image[0])
 
 	except Exception as e:
 		print(f"main() {e}")

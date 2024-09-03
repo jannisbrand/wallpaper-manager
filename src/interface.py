@@ -10,9 +10,15 @@ class GUI():
 	FONT = "Comic Sans"
 	HEADER_WEIGHT = 18
 	CONTROL_WEIGHT = 14
+	PREVIEW_COL_DISTANCE = 60
+	PREVIEW_ROW_DISTANCE = 45
+	PREVIEW_ROW_AMOUNT = 5
+	PREVIEW_COL_AMOUNT = 3
+	PREVIEW_FIELD_SIZE_X = 190
+	PREVIEW_FIELD_SIZE_Y = 245
 
 	def __init__(self, wp_mngr: wallpaper_manager, title: str, size_x: int = None, size_y: int = None) -> None:
-		self.wp_mngr = wp_mngr
+		self.wp_mngr = wallpaper_manager(600, 400)
 
 		self.window = Tk()
 		self.window.title(title)
@@ -20,8 +26,13 @@ class GUI():
 
 		self.frame = ttk.Frame(self.window)
 
-		self.labels = []
-		self.buttons = []
+		self.labels: list = []
+		self.buttons: list = []
+
+		self.preview_page: int = 1
+		self.max_shown_previews: int = 5
+		self.preview_start_pos: tuple = (350, 240)
+		self.preview_start_index = 0
 
 		self.create_widgets()
 
@@ -32,17 +43,28 @@ class GUI():
 		lbl_preview_header = ttk.Label(self.window, text="Preview", width=self.WIDTH/2, font=(self.FONT, self.HEADER_WEIGHT), compound=CENTER)
 		btn_select_work_dir = ttk.Button(self.window, text="Select Working Dir.", width=20, command=self.open_file_dialog_work_dir)
 		btn_select_wallpaper_dir = ttk.Button(self.window, text="Select Wallpaper Dir.", width=20, command=self.open_file_dialog_wp_dir)
+		#btn_select_wallpaper = ttk.Button(self.window, text="Select Wallpaper", width=20, command=self.open_file_dialog_wp_dir)
+		btn_get_wallpapers = ttk.Button(self.window, text="Find Wallpapers", width=20, command=self.get_wallpapers)
+		btn_increment_preview_page = ttk.Button(self.window, name="inc", text=">", width=5)
+		btn_increment_preview_page.bind("<Button>", self._change_preview_page)
+		btn_decrement_preview_page = ttk.Button(self.window, name="dec", text="<", width=5)
+		btn_decrement_preview_page.bind("<Button>", self._change_preview_page)
 		
 		self.labels.append(lbl_control_header)
 		self.labels.append(lbl_preview_header)
 
 		self.buttons.append(btn_select_wallpaper_dir)
 		self.buttons.append(btn_select_work_dir)
+		self.buttons.append(btn_increment_preview_page)
+		self.buttons.append(btn_decrement_preview_page)
 
 		lbl_control_header.place(x=self.WIDTH*0.65)
 		lbl_preview_header.place(x=self.WIDTH*0.15)
 		btn_select_work_dir.place(x=(self.WIDTH) - (btn_select_work_dir["width"] * 6) - 20, y=40)
 		btn_select_wallpaper_dir.place(x=(self.WIDTH) - (btn_select_wallpaper_dir["width"] * 6) - 20, y=100)
+		btn_get_wallpapers.place(x=(self.WIDTH) - (btn_select_wallpaper_dir["width"] * 6) - 20, y=160)
+		btn_increment_preview_page.place(x=(self.WIDTH) - (btn_increment_preview_page["width"] * 6) - 20, y= 240)
+		btn_decrement_preview_page.place(x=(self.WIDTH) - (btn_increment_preview_page["width"] * 6) - 60, y= 240)
 
 
 	def open_file_dialog_work_dir(self) -> bool:
@@ -57,15 +79,87 @@ class GUI():
 
 	def open_file_dialog_wp_dir(self) -> bool:
 		try:
-			path = filedialog.askdirectory(initialdir=self.wp_mngr.get_work_dir(), mustexist=True)	# TODO: Missing method get_work_dir()
+			path = filedialog.askdirectory(initialdir=self.wp_mngr.get_work_dir(), mustexist=True)
 			if self.wp_mngr.get_work_dir() not in path:
 				return False
-			self.wp_mngr.set_working_directory(path)
+			path = path.removeprefix(self.wp_mngr.get_work_dir())
+			self.wp_mngr.set_wallpaper_directory(path)
 			return True
 		except FileExistsError as e:
 			print(f"open_file_dialog_dir: {e}")
 			return False
-		
+
+
+	def select_wallpaper(self, event) -> bool:
+		try:
+			try:
+				wallpaper_index: int = int(event.widget.winfo_name())
+			except TypeError as e:
+				print(f"Select_wallpaper: {e}")
+				return 0
+			
+			self.wp_mngr.push_wallpaper_to_the_desktop(self.wp_mngr.wallpaper_collection[wallpaper_index])
+			return 1
+		except Exception as e:
+			print(f"Select_wallpaper: {e}")
+
+
+	def get_wallpapers(self) -> bool:
+		try:
+			self._show_preview_images()
+		except:
+			pass
+
+
+	def _change_preview_page(self, event):
+		try:
+			widget_name: str = str(event.widget.winfo_name())
+
+			if widget_name == "inc":
+				if self.preview_start_index + 1 < 11:
+					self.preview_page += 1
+			elif widget_name == "dec":
+				if self.preview_start_index - 1 > 0:
+					self.preview_page -= 1
+
+			preview_images_max: int = self.PREVIEW_COL_AMOUNT * self.PREVIEW_ROW_AMOUNT
+			self.preview_start_index = preview_images_max * self.preview_page -1
+			self._show_preview_images()
+		except:
+			pass
+
+
+	def _show_preview_images(self) -> bool:
+		try:
+			amount: int = self.wp_mngr.get_wallpapers().__len__()
+			try:
+				path: str = self.wp_mngr.getFullDir()	# Missing method
+			except Exception as e:
+				path: str = "C:/Users/wm00964/Documents/Wallpaper/Animated/WormHole/"
+
+			if amount <= 0:
+				return 0
+
+			counter = self.preview_start_index
+			start_pos_x = self.preview_start_pos[0]
+			start_pos_y = self.preview_start_pos[1]
+			for row in range(self.PREVIEW_ROW_AMOUNT):
+				for column in range(self.PREVIEW_COL_AMOUNT):
+					if counter == amount - 1:
+						return 1
+					
+					image = Image.open(path + self.wp_mngr.get_wallpapers()[counter]).resize((60,45))
+					photo = ImageTk.PhotoImage(image)
+					lbl_preview = ttk.Label(self.window, name=f"{counter}", image=photo, width=10, borderwidth=0)
+					lbl_preview.image = photo
+					lbl_preview.bind("<Button>", self.select_wallpaper)
+					self.labels.append(lbl_preview)
+					lbl_preview.place(x=start_pos_x + (self.PREVIEW_COL_DISTANCE * column), y=start_pos_y + (self.PREVIEW_ROW_DISTANCE * row))
+
+					counter += 1
+		except Exception as e:
+			print(e)
+
 
 if __name__ == "__main__":
 	wp = wallpaper_manager(resolution_x=600, resolution_y=400)
