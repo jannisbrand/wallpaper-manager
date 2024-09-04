@@ -178,7 +178,7 @@ class GUI():
 			start_pos_y = self.preview_start_pos[1]
 			for row in range(self.PREVIEW_ROW_AMOUNT):
 				for column in range(self.PREVIEW_COL_AMOUNT):
-					if image_counter == self.max_shown_previews:
+					if image_counter == self.max_shown_previews or image_index >= amount:
 						return 1
 					
 					image = Image.open(path + self.wp_mngr.get_wallpapers()[image_index]).resize((60,45))

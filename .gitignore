@@ -14,5 +14,10 @@
 # Python cache
 __pycache__/
 
+# Build dir
+dist/
+build/
+*.spec
+
 # Own temporary files
 temporary/

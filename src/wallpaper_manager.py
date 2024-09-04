@@ -27,7 +27,8 @@ class wallpaper_manager:
 		'''
 		if os.path.isdir(working_dir):
 			self.working_directory = working_dir + "/"
-			return True
+			if self._clear_wallpaper_collection():
+				return True
 		return False
 
 
@@ -37,9 +38,19 @@ class wallpaper_manager:
 		'''
 		if os.path.isdir(self.working_directory + wallpaper_dir):
 			self.wallpaper_directory = wallpaper_dir + '/'
-			if self._search_wallpaper_dir():
-				return True
+			if self._clear_wallpaper_collection():
+				if self._search_wallpaper_dir():
+					return True
 		return False
+
+
+	def _clear_wallpaper_collection(self) -> bool:
+		try:
+			self.wallpaper_collection = []
+			return True
+		except Exception as e:
+			print(f"_clear_wallpaper_collection: {e}")
+			return False
 
 
 	def get_wallpapers(self) -> list:
