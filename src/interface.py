@@ -56,6 +56,8 @@ class GUI():
 		btn_increment_preview_page.bind("<Button>", self._change_preview_page)
 		btn_decrement_preview_page = ttk.Button(self.window, name="dec", text="<", width=5)
 		btn_decrement_preview_page.bind("<Button>", self._change_preview_page)
+		self.lst_available_wallpaper_dirs = Listbox(self.window, font=self.CONTROL_WEIGHT)
+		self.lst_available_wallpaper_dirs.bind("<<ListboxSelect>>", self._wallpaper_dir_selected)
 		
 		self.labels.append(lbl_control_header)
 		self.labels.append(lbl_preview_header)
@@ -74,6 +76,7 @@ class GUI():
 		btn_get_wallpapers.place(x=25, y=self.PREVIEW_ROW_AMOUNT * 65 + 25)
 		btn_increment_preview_page.place(x=195, y=self.PREVIEW_ROW_AMOUNT * 65 + 25)
 		btn_decrement_preview_page.place(x=155, y=self.PREVIEW_ROW_AMOUNT * 65 + 25)
+		self.lst_available_wallpaper_dirs.place(x=(self.WIDTH) - (btn_select_wallpaper_dir["width"] * 6) - 20, y=35, width=100, height=100)
 
 
 	def open_file_dialog_work_dir(self) -> bool:
@@ -81,6 +84,8 @@ class GUI():
 			path = filedialog.askdirectory(mustexist=True)
 			self.lbl_current_directory.config(text=path)
 			self.wp_mngr.set_working_directory(path)
+			#self.cbo_available_wallpaper_dirs["values"] = self.wp_mngr.get_items_of_wallpaper()
+			self._populate_listbox_items(self.lst_available_wallpaper_dirs, self.wp_mngr.get_items_of_wallpaper())
 			return True
 		except FileExistsError as e:
 			print(f"open_file_dialog_dir: {e}")
@@ -112,6 +117,24 @@ class GUI():
 			return 1
 		except Exception as e:
 			print(f"Select_wallpaper: {e}")
+
+
+	def _populate_listbox_items(self, widget: ttk.Widget, items: list):
+		try:
+			print(widget.size())
+			for i in range(items.__len__()):
+				widget.insert(i, items[i])
+		except IndexError as e:
+			print(f"_populate_listbox_items {e}")
+
+
+	def _wallpaper_dir_selected(self, event) -> bool:
+		try:
+			wallpaper_dir: str = event.widget.get(event.widget.curselection())
+			if os.path.isdir(self.wp_mngr.get_work_dir() + wallpaper_dir + "/"):
+				self.wp_mngr.set_wallpaper_directory(wallpaper_dir)
+		except:
+			pass
 
 
 	def get_wallpapers(self) -> bool:

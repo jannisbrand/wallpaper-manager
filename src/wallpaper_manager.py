@@ -65,6 +65,10 @@ class wallpaper_manager:
 		return self.wallpaper_directory
 
 
+	def get_items_of_wallpaper(self) -> list:
+		return os.listdir(self.working_directory)
+
+
 	def _search_wallpaper_dir(self) -> bool:
 		'''
 		Gets called after the wallpaper wallpaper directory gets set or changed.
