@@ -10,25 +10,26 @@ from wallpaper_manager import wallpaper_manager
 import os
 
 class GUI():
-	WIDTH = 650
-	HEIGHT = 400
-	BUTTON_WIDTH = 20
+	BUTTON_WIDTH_NORMAL = 110
+	BUTTON_HEIGHT_NORMAL = 30
 	FONT = "Comic Sans"
 	HEADER_WEIGHT = 18
 	CONTROL_WEIGHT = 11
-	PREVIEW_COL_DISTANCE = 60
-	PREVIEW_ROW_DISTANCE = 45
-	PREVIEW_ROW_AMOUNT = 5
+	HINT_WEIGHT = 8
+	PREVIEW_COL_DISTANCE = 10
+	PREVIEW_ROW_DISTANCE = 10
+	PREVIEW_ROW_AMOUNT = 4
 	PREVIEW_COL_AMOUNT = 3
-	PREVIEW_FIELD_SIZE_X = 190
-	PREVIEW_FIELD_SIZE_Y = 245
+	PREVIEW_FIELD_SIZE_X = 75
+	PREVIEW_FIELD_SIZE_Y = 45
 
 	def __init__(self, wp_mngr: wallpaper_manager, title: str, size_x: int = None, size_y: int = None) -> None:
 		self.wp_mngr = wp_mngr
 
 		self.window = Tk()
 		self.window.title(title)
-		self.window.config(width=self.WIDTH, height=self.HEIGHT)
+		self.window.config(width=size_x, height=size_y)
+		self.window_size = (size_x, size_y)
 
 		self.frame = ttk.Frame(self.window)
 
@@ -37,24 +38,24 @@ class GUI():
 		self.buttons: list = []
 
 		self.preview_page: int = 1
-		self.max_shown_previews: int = 15
-		self.preview_start_pos: tuple = (25, 80)
+		self.max_shown_previews: int = 12
+		self.preview_start_pos: tuple = (485, ((self.BUTTON_HEIGHT_NORMAL*2) + 20 + 100))	# 2 Buttons + 4 spaces (5px) + 1 listbox
 		self.preview_start_index = 0
 
 		self.create_widgets()
 
 
 	def create_widgets(self) -> bool:
-		lbl_control_header = ttk.Label(self.window, text="Controls", width=self.WIDTH/2, font=(self.FONT, self.HEADER_WEIGHT), compound=CENTER)
-		lbl_preview_header = ttk.Label(self.window, text="Preview", width=self.WIDTH/2, font=(self.FONT, self.HEADER_WEIGHT), compound=CENTER)
-		self.lbl_current_directory = ttk.Label(self.window, text="Select directory...", width=self.WIDTH/2, font=(self.FONT, self.CONTROL_WEIGHT), compound=CENTER)
-		btn_select_work_dir = ttk.Button(self.window, text="Select Working Dir.", width=20, command=self.open_file_dialog_work_dir)
-		btn_select_wallpaper_dir = ttk.Button(self.window, text="Select Wallpaper Dir.", width=20, command=self.open_file_dialog_wp_dir)
+		lbl_control_header = ttk.Label(self.window, text="Controls", font=(self.FONT, self.HEADER_WEIGHT), compound=CENTER)
+		lbl_preview_header = ttk.Label(self.window, text="Preview", font=(self.FONT, self.HEADER_WEIGHT), compound=CENTER)
+		self.lbl_current_directory = ttk.Label(self.window, text="Select directory...", font=(self.FONT, self.CONTROL_WEIGHT), compound=CENTER)
+		btn_select_work_dir = ttk.Button(self.window, text="Select Working Dir.", command=self.open_file_dialog_work_dir)
+		btn_select_wallpaper_dir = ttk.Button(self.window, text="Select Wallpaper Dir.", command=self.open_file_dialog_wp_dir)
 		#btn_select_wallpaper = ttk.Button(self.window, text="Select Wallpaper", width=20, command=self.open_file_dialog_wp_dir)
-		btn_get_wallpapers = ttk.Button(self.window, text="Find Wallpapers", width=20, command=self.get_wallpapers)
-		btn_increment_preview_page = ttk.Button(self.window, name="inc", text=">", width=5)
+		btn_get_wallpapers = ttk.Button(self.window, text="Find Wallpapers", command=self.get_wallpapers)
+		btn_increment_preview_page = ttk.Button(self.window, name="inc", text=">")
 		btn_increment_preview_page.bind("<Button>", self._change_preview_page)
-		btn_decrement_preview_page = ttk.Button(self.window, name="dec", text="<", width=5)
+		btn_decrement_preview_page = ttk.Button(self.window, name="dec", text="<")
 		btn_decrement_preview_page.bind("<Button>", self._change_preview_page)
 		self.lst_available_wallpaper_dirs = Listbox(self.window, font=self.CONTROL_WEIGHT)
 		self.lst_available_wallpaper_dirs.bind("<<ListboxSelect>>", self._wallpaper_dir_selected)
@@ -68,16 +69,16 @@ class GUI():
 		self.buttons.append(btn_increment_preview_page)
 		self.buttons.append(btn_decrement_preview_page)
 
-		lbl_control_header.place(x=self.WIDTH*0.65, y=40)	
-		lbl_preview_header.place(x=self.WIDTH*0.15, y=40)
+		# lbl_control_header.place(x=0, y=0)	
+		# lbl_preview_header.place(x=self.WIDTH*0.15, y=40)
 		self.lbl_current_directory.place(x=0, y=0)
-		btn_select_work_dir.place(x=(self.WIDTH) - (btn_select_work_dir["width"] * 6) - 160, y=5)
-		btn_select_wallpaper_dir.place(x=(self.WIDTH) - (btn_select_wallpaper_dir["width"] * 6) - 20, y=5)
-		btn_get_wallpapers.place(x=25, y=self.PREVIEW_ROW_AMOUNT * 65 + 25)
-		btn_increment_preview_page.place(x=195, y=self.PREVIEW_ROW_AMOUNT * 65 + 25)
-		btn_decrement_preview_page.place(x=155, y=self.PREVIEW_ROW_AMOUNT * 65 + 25)
-		self.lst_available_wallpaper_dirs.place(x=(self.WIDTH) - (btn_select_wallpaper_dir["width"] * 6) - 20, y=35, width=100, height=100)
-
+		btn_select_work_dir.place(x=485, y=5, width=self.BUTTON_WIDTH_NORMAL, height=self.BUTTON_HEIGHT_NORMAL)
+		btn_select_wallpaper_dir.place(x=600, y=5, width=self.BUTTON_WIDTH_NORMAL, height=self.BUTTON_HEIGHT_NORMAL)
+		btn_get_wallpapers.place(x=485, y=0 + (self.BUTTON_HEIGHT_NORMAL + 15 + 100), width=self.BUTTON_WIDTH_NORMAL, height=self.BUTTON_HEIGHT_NORMAL)
+		self.lst_available_wallpaper_dirs.place(x=485, y=0 + (self.BUTTON_HEIGHT_NORMAL + 10), width=230, height=100)
+		
+		btn_decrement_preview_page.place(x=485, y=((self.BUTTON_HEIGHT_NORMAL*2) + (4 * 5) + 100 + (self.PREVIEW_ROW_AMOUNT * self.PREVIEW_FIELD_SIZE_Y + 5)), width=80, height=25)
+		btn_increment_preview_page.place(x=635, y=((self.BUTTON_HEIGHT_NORMAL*2) + (4 * 5) + 100 + (self.PREVIEW_ROW_AMOUNT * self.PREVIEW_FIELD_SIZE_Y + 5)), width=80, height=25)
 
 	def open_file_dialog_work_dir(self) -> bool:
 		try:
@@ -204,14 +205,13 @@ class GUI():
 					if image_counter == self.max_shown_previews or image_index >= amount:
 						return 1
 					
-					image = Image.open(path + self.wp_mngr.get_wallpapers()[image_index]).resize((60,45))
-					print(image)
+					image = Image.open(path + self.wp_mngr.get_wallpapers()[image_index]).resize((self.PREVIEW_FIELD_SIZE_X, self.PREVIEW_FIELD_SIZE_Y))
 					photo = ImageTk.PhotoImage(image)
-					lbl_preview = ttk.Label(self.window, name=f"{image_counter}", image=photo, width=10, borderwidth=0)
+					lbl_preview = ttk.Label(self.window, name=f"{image_counter}", image=photo, borderwidth=0)
 					lbl_preview.image = photo
 					lbl_preview.bind("<Button>", self.select_wallpaper)
 					self.preview_labels.append(lbl_preview)
-					lbl_preview.place(x=start_pos_x + (self.PREVIEW_COL_DISTANCE * column), y=start_pos_y + (self.PREVIEW_ROW_DISTANCE * row))
+					lbl_preview.place(x=start_pos_x + (self.PREVIEW_FIELD_SIZE_X * column), y=start_pos_y + (self.PREVIEW_FIELD_SIZE_Y * row), width=self.PREVIEW_FIELD_SIZE_X, height=self.PREVIEW_FIELD_SIZE_Y)
 
 					image_counter += 1
 					image_index += 1

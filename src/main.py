@@ -10,7 +10,7 @@ def main() -> int:
 	try:
 		wp_mngr = wallpaper_manager(resolution_x=1920, resolution_y=1080)
 		if isinstance(wp_mngr, wallpaper_manager):
-			gui = GUI(wp_mngr, "Wallpaper Manager V0.1 by Jannis Brand")
+			gui = GUI(wp_mngr, "Wallpaper Manager V0.1 by Jannis Brand", 720, 400)
 		if isinstance(gui, GUI):
 			gui.window.mainloop()
 	except Exception as e:
